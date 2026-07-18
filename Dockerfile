@@ -17,6 +17,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 
 COPY docker/nginx.conf /etc/nginx/sites-enabled/default
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 
 EXPOSE 10000
 
