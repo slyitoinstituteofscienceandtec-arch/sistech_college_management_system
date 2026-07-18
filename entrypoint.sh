@@ -1,19 +1,18 @@
 #!/bin/bash
-set -e
+set -ex
 
-MARKER="/var/www/html/storage/app/.deployed"
+MARKER="storage/app/.deployed"
 
 if [ -f "$MARKER" ]; then
-    php artisan migrate --force 2>&1 || true
+    php artisan migrate --force || true
 else
-    php artisan migrate:fresh --force 2>&1 || true
-    php artisan db:seed --force 2>&1 || true
+    php artisan migrate:fresh --force || true
+    php artisan db:seed --force || true
     touch "$MARKER"
 fi
 
-php artisan config:cache 2>&1 || true
-php artisan route:cache 2>&1 || true
-php artisan view:cache 2>&1 || true
+php artisan config:cache || true
+php artisan route:cache || true
+php artisan view:cache || true
 
-echo "Starting server on port ${PORT:-10000}..."
-php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+exec php artisan serve --host=0.0.0.0 --port=${PORT:-10000}

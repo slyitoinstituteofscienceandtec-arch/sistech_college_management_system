@@ -13,10 +13,8 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN chmod +x entrypoint.sh
-
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 775 storage bootstrap/cache || true
 
 EXPOSE 10000
 
-CMD ["./entrypoint.sh"]
+CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
