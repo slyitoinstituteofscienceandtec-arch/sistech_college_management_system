@@ -11,10 +11,11 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 RUN chmod -R 775 storage bootstrap/cache || true
+RUN rm -f bootstrap/cache/*.php storage/framework/views/*.php storage/framework/sessions/* storage/logs/*.log
 
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
+CMD php artisan migrate --force 2>&1; php artisan db:seed --force 2>&1; php -S 0.0.0.0:${PORT:-10000} server.php
