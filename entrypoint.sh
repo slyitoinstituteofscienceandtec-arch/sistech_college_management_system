@@ -1,6 +1,15 @@
 #!/bin/bash
-php artisan migrate --force
-php artisan db:seed --force
+
+MARKER="/var/www/html/storage/app/.deployed"
+
+if [ -f "$MARKER" ]; then
+    php artisan migrate --force
+else
+    php artisan migrate:fresh --force
+    php artisan db:seed --force
+    touch "$MARKER"
+fi
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
