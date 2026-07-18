@@ -17,6 +17,6 @@ RUN chmod +x entrypoint.sh
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-EXPOSE 8000
+EXPOSE 10000
 
 CMD ["./entrypoint.sh"]
