@@ -79,7 +79,7 @@
             <div class="card-header fw-semibold"><i class="fas fa-image me-2"></i>Current Image</div>
             <div class="card-body text-center">
                 <div id="preview">
-                    <img src="{{ file_url($galleryItem->image) }}" alt="{{ $galleryItem->title }}" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);">
+                    <img src="{{ str_starts_with($galleryItem->image ?? '', 'http') ? $galleryItem->image : asset('storage/' . $galleryItem->image) }}" alt="{{ $galleryItem->title }}" style="width: 100%; border-radius: 8px; border: 1px solid var(--border);">
                 </div>
                 <small class="text-muted d-block mt-2">Uploaded: {{ $galleryItem->created_at->format('M d, Y') }}</small>
             </div>

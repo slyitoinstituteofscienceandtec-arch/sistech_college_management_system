@@ -9,13 +9,6 @@ use Illuminate\Support\Facades\Storage;
 
 class GalleryController extends Controller
 {
-    protected CloudinaryService $cloudinary;
-
-    public function __construct(CloudinaryService $cloudinary)
-    {
-        $this->cloudinary = $cloudinary;
-    }
-
     public function index(Request $request)
     {
         $query = GalleryItem::query();
@@ -52,7 +45,8 @@ class GalleryController extends Controller
         ]);
 
         $file = $request->file('image');
-        $cloudUrl = $this->cloudinary->upload($file, 'sistech/gallery');
+        $cloudinary = app(CloudinaryService::class);
+        $cloudUrl = $cloudinary->upload($file, 'sistech/gallery');
         $validated['image'] = $cloudUrl ?: $file->store('gallery', 'public');
 
         $validated['is_active'] = $request->boolean('is_active');
@@ -83,7 +77,8 @@ class GalleryController extends Controller
         if ($request->hasFile('image')) {
             $this->deleteFile($galleryItem->image);
             $file = $request->file('image');
-            $cloudUrl = $this->cloudinary->upload($file, 'sistech/gallery');
+            $cloudinary = app(CloudinaryService::class);
+            $cloudUrl = $cloudinary->upload($file, 'sistech/gallery');
             $validated['image'] = $cloudUrl ?: $file->store('gallery', 'public');
         } else {
             unset($validated['image']);
@@ -111,7 +106,7 @@ class GalleryController extends Controller
         }
 
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            $this->cloudinary->destroy($path);
+            app(CloudinaryService::class)->destroy($path);
         } elseif (Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
         }

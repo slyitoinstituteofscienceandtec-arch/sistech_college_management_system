@@ -36,7 +36,7 @@
     <div class="col-md-3 col-sm-6">
         <div class="card-sistech h-100" style="overflow: hidden;">
             <div style="aspect-ratio: 1; overflow: hidden; position: relative;">
-                <img src="{{ file_url($item->image) }}" alt="{{ $item->title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="{{ str_starts_with($item->image ?? '', 'http') ? $item->image : asset('storage/' . $item->image) }}" alt="{{ $item->title }}" style="width: 100%; height: 100%; object-fit: cover;">
                 @if(!$item->is_active)
                 <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center;">
                     <span class="badge bg-danger">Inactive</span>

@@ -10,13 +10,6 @@ use Illuminate\Support\Facades\Storage;
 
 class LibraryController extends Controller
 {
-    protected CloudinaryService $cloudinary;
-
-    public function __construct(CloudinaryService $cloudinary)
-    {
-        $this->cloudinary = $cloudinary;
-    }
-
     public function index(Request $request)
     {
         $query = Book::query();
@@ -55,7 +48,8 @@ class LibraryController extends Controller
         $pdfUrl = null;
         if ($request->hasFile('pdf_file')) {
             $file = $request->file('pdf_file');
-            $cloudUrl = $this->cloudinary->upload($file, 'sistech/books');
+            $cloudinary = app(CloudinaryService::class);
+            $cloudUrl = $cloudinary->upload($file, 'sistech/books');
             $pdfUrl = $cloudUrl ?: $file->store('books/pdfs', 'public');
         }
 
@@ -84,7 +78,8 @@ class LibraryController extends Controller
         if ($request->hasFile('pdf_file')) {
             $this->deleteFile($book->pdf_file);
             $file = $request->file('pdf_file');
-            $cloudUrl = $this->cloudinary->upload($file, 'sistech/books');
+            $cloudinary = app(CloudinaryService::class);
+            $cloudUrl = $cloudinary->upload($file, 'sistech/books');
             $data['pdf_file'] = $cloudUrl ?: $file->store('books/pdfs', 'public');
         }
 
@@ -140,7 +135,7 @@ class LibraryController extends Controller
         }
 
         if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
-            $this->cloudinary->destroy($path);
+            app(CloudinaryService::class)->destroy($path);
         } elseif (Storage::disk('public')->exists($path)) {
             Storage::disk('public')->delete($path);
         }
