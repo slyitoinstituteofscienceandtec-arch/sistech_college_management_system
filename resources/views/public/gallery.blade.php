@@ -35,8 +35,12 @@
         @if($galleryItems->count() > 0)
         <div class="grid-4" style="gap: 1.25rem;" id="galleryGrid">
             @foreach($galleryItems as $item)
-            <div class="gallery-item-wrapper" data-category="{{ $item->category }}" style="border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 1; cursor: pointer; background: #000;" onclick="openLightbox('{{ asset('storage/' . $item->image) }}', '{{ addslashes($item->title) }}')">
-                <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            <div class="gallery-item-wrapper" data-category="{{ $item->category }}" style="border-radius: 16px; overflow: hidden; position: relative; aspect-ratio: 1; cursor: pointer; background: #f1f5f9;" onclick="openLightbox('{{ asset('storage/' . $item->image) }}', '{{ addslashes($item->title) }}')">
+                <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->title }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div style="display: none; position: absolute; inset: 0; flex-direction: column; align-items: center; justify-content: center; background: #f1f5f9; color: #94a3b8;">
+                    <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                    <span style="font-size: 0.8rem;">{{ $item->title }}</span>
+                </div>
                 <div style="position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(0,0,0,0.7)); display: flex; flex-direction: column; justify-content: flex-end; padding: 1rem; opacity: 0; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
                     <span style="color: #fff; font-weight: 600; font-size: 0.95rem;">{{ $item->title }}</span>
                     <span style="color: rgba(255,255,255,0.7); font-size: 0.8rem;">{{ ucfirst($item->category) }}</span>
