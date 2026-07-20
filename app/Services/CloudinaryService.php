@@ -8,15 +8,15 @@ use Illuminate\Support\Facades\Log;
 
 class CloudinaryService
 {
-    protected string $cloudName;
-    protected string $apiKey;
-    protected string $apiSecret;
+    protected string $cloudName = '';
+    protected string $apiKey = '';
+    protected string $apiSecret = '';
 
     public function __construct()
     {
-        $this->cloudName = config('services.cloudinary.cloud_name');
-        $this->apiKey = config('services.cloudinary.api_key');
-        $this->apiSecret = config('services.cloudinary.api_secret');
+        $this->cloudName = config('services.cloudinary.cloud_name') ?? '';
+        $this->apiKey = config('services.cloudinary.api_key') ?? '';
+        $this->apiSecret = config('services.cloudinary.api_secret') ?? '';
     }
 
     public function isConfigured(): bool
