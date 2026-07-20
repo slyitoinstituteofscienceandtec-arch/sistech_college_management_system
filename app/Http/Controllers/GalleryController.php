@@ -3,11 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\GalleryItem;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class GalleryController extends Controller
 {
+    protected CloudinaryService $cloudinary;
+
+    public function __construct(CloudinaryService $cloudinary)
+    {
+        $this->cloudinary = $cloudinary;
+    }
+
     public function index(Request $request)
     {
         $query = GalleryItem::query();
@@ -43,7 +51,10 @@ class GalleryController extends Controller
             'is_active' => 'nullable',
         ]);
 
-        $validated['image'] = $request->file('image')->store('gallery', 'public');
+        $file = $request->file('image');
+        $cloudUrl = $this->cloudinary->upload($file, 'sistech/gallery');
+        $validated['image'] = $cloudUrl ?: $file->store('gallery', 'public');
+
         $validated['is_active'] = $request->boolean('is_active');
         $validated['sort_order'] = $validated['sort_order'] ?? 0;
 
@@ -70,10 +81,10 @@ class GalleryController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            if ($galleryItem->image && Storage::disk('public')->exists($galleryItem->image)) {
-                Storage::disk('public')->delete($galleryItem->image);
-            }
-            $validated['image'] = $request->file('image')->store('gallery', 'public');
+            $this->deleteFile($galleryItem->image);
+            $file = $request->file('image');
+            $cloudUrl = $this->cloudinary->upload($file, 'sistech/gallery');
+            $validated['image'] = $cloudUrl ?: $file->store('gallery', 'public');
         } else {
             unset($validated['image']);
         }
@@ -88,10 +99,21 @@ class GalleryController extends Controller
 
     public function destroy(GalleryItem $galleryItem)
     {
-        if ($galleryItem->image && Storage::disk('public')->exists($galleryItem->image)) {
-            Storage::disk('public')->delete($galleryItem->image);
-        }
+        $this->deleteFile($galleryItem->image);
         $galleryItem->delete();
         return redirect()->route('admin.gallery.index')->with('success', 'Gallery image deleted.');
+    }
+
+    protected function deleteFile(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            $this->cloudinary->destroy($path);
+        } elseif (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

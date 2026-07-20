@@ -4,11 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\BookBorrowing;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LibraryController extends Controller
 {
+    protected CloudinaryService $cloudinary;
+
+    public function __construct(CloudinaryService $cloudinary)
+    {
+        $this->cloudinary = $cloudinary;
+    }
+
     public function index(Request $request)
     {
         $query = Book::query();
@@ -44,13 +52,15 @@ class LibraryController extends Controller
         $validated['quantity'] = $validated['quantity'] ?? 1;
         $validated['available'] = $validated['quantity'];
 
-        $pdfPath = null;
+        $pdfUrl = null;
         if ($request->hasFile('pdf_file')) {
-            $pdfPath = $request->file('pdf_file')->store('books/pdfs', 'public');
+            $file = $request->file('pdf_file');
+            $cloudUrl = $this->cloudinary->upload($file, 'sistech/books');
+            $pdfUrl = $cloudUrl ?: $file->store('books/pdfs', 'public');
         }
 
         unset($validated['pdf_file']);
-        $validated['pdf_file'] = $pdfPath;
+        $validated['pdf_file'] = $pdfUrl;
 
         Book::create($validated);
 
@@ -72,10 +82,10 @@ class LibraryController extends Controller
         $data = $request->only(['title', 'author', 'category', 'description']);
 
         if ($request->hasFile('pdf_file')) {
-            if ($book->pdf_file && Storage::disk('public')->exists($book->pdf_file)) {
-                Storage::disk('public')->delete($book->pdf_file);
-            }
-            $data['pdf_file'] = $request->file('pdf_file')->store('books/pdfs', 'public');
+            $this->deleteFile($book->pdf_file);
+            $file = $request->file('pdf_file');
+            $cloudUrl = $this->cloudinary->upload($file, 'sistech/books');
+            $data['pdf_file'] = $cloudUrl ?: $file->store('books/pdfs', 'public');
         }
 
         $book->update($data);
@@ -84,9 +94,7 @@ class LibraryController extends Controller
 
     public function destroy(Book $book)
     {
-        if ($book->pdf_file && Storage::disk('public')->exists($book->pdf_file)) {
-            Storage::disk('public')->delete($book->pdf_file);
-        }
+        $this->deleteFile($book->pdf_file);
         $book->delete();
         return redirect()->route('admin.library.index')->with('success', 'Book deleted successfully.');
     }
@@ -123,5 +131,18 @@ class LibraryController extends Controller
         $book->save();
 
         return back()->with('success', 'Book returned successfully.');
+    }
+
+    protected function deleteFile(?string $path): void
+    {
+        if (!$path) {
+            return;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            $this->cloudinary->destroy($path);
+        } elseif (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }

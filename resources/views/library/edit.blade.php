@@ -50,7 +50,7 @@
                 <label class="form-label fw-semibold">PDF File</label>
                 @if($book->pdf_file)
                 <div class="mb-2">
-                    <a href="{{ Storage::disk('public')->url($book->pdf_file) }}" target="_blank" class="text-decoration-none" style="font-size: 13px;">
+                    <a href="{{ @fileurl($book->pdf_file) }}" target="_blank" class="text-decoration-none" style="font-size: 13px;">
                         <i class="fas fa-file-pdf text-danger me-1"></i> Current PDF
                     </a>
                 </div>

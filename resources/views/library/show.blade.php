@@ -9,7 +9,7 @@
     </div>
     <div class="d-flex gap-2">
         @if($book->pdf_file)
-        <a href="{{ Storage::disk('public')->url($book->pdf_file) }}" target="_blank" class="btn btn-danger">
+        <a href="{{ @fileurl($book->pdf_file) }}" target="_blank" class="btn btn-danger">
             <i class="fas fa-file-pdf me-1"></i> Open PDF
         </a>
         @endif
@@ -44,7 +44,7 @@
                 <div class="d-flex justify-content-between py-2">
                     <span class="text-muted">PDF</span>
                     @if($book->pdf_file)
-                        <a href="{{ Storage::disk('public')->url($book->pdf_file) }}" target="_blank" class="text-decoration-none">
+                        <a href="{{ @fileurl($book->pdf_file) }}" target="_blank" class="text-decoration-none">
                             <i class="fas fa-file-pdf text-danger me-1"></i> Available
                         </a>
                     @else
@@ -68,7 +68,7 @@
                 <i class="fas fa-file-pdf me-2" style="color: #DC2626;"></i>PDF Preview
             </div>
             <div class="card-body p-0">
-                <iframe src="{{ Storage::disk('public')->url($book->pdf_file) }}" style="width: 100%; height: 600px; border: none; border-radius: 0 0 12px 12px;"></iframe>
+                <iframe src="{{ @fileurl($book->pdf_file) }}" style="width: 100%; height: 600px; border: none; border-radius: 0 0 12px 12px;"></iframe>
             </div>
         </div>
         @else

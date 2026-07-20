@@ -55,7 +55,7 @@
                         <td>{{ ucfirst($book->category ?? '—') }}</td>
                         <td class="text-center">
                             @if($book->pdf_file)
-                                <a href="{{ Storage::disk('public')->url($book->pdf_file) }}" target="_blank" class="text-decoration-none" title="View PDF">
+                                <a href="{{ @fileurl($book->pdf_file) }}" target="_blank" class="text-decoration-none" title="View PDF">
                                     <i class="fas fa-file-pdf" style="color: #DC2626; font-size: 16px;"></i>
                                 </a>
                             @else
