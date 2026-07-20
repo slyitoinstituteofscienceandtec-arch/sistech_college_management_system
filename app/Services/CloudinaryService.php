@@ -27,29 +27,32 @@ class CloudinaryService
     public function upload(UploadedFile $file, string $folder = 'uploads'): ?string
     {
         if (!$this->isConfigured()) {
-            Log::warning('Cloudinary not configured, falling back to local storage');
             return null;
         }
 
-        $timestamp = time();
-        $params = ['folder' => $folder, 'timestamp' => $timestamp];
-        $signature = $this->signParams($params);
+        try {
+            $timestamp = time();
+            $params = ['folder' => $folder, 'timestamp' => $timestamp];
+            $signature = $this->signParams($params);
 
-        $response = Http::attach(
-            'file', $file->getContents(), $file->getClientOriginalName()
-        )->post("https://api.cloudinary.com/v1_1/{$this->cloudName}/auto/upload", [
-            'api_key' => $this->apiKey,
-            'timestamp' => $timestamp,
-            'signature' => $signature,
-            'folder' => $folder,
-        ]);
+            $response = Http::timeout(30)->attach(
+                'file', $file->getContents(), $file->getClientOriginalName()
+            )->post("https://api.cloudinary.com/v1_1/{$this->cloudName}/auto/upload", [
+                'api_key' => $this->apiKey,
+                'timestamp' => $timestamp,
+                'signature' => $signature,
+                'folder' => $folder,
+            ]);
 
-        if ($response->successful()) {
-            return $response->json('secure_url');
+            if ($response->successful()) {
+                return $response->json('secure_url');
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            Log::error('Cloudinary upload failed', ['error' => $e->getMessage()]);
+            return null;
         }
-
-        Log::error('Cloudinary upload failed', ['response' => $response->body()]);
-        return null;
     }
 
     public function destroy(string $url): bool
@@ -58,23 +61,28 @@ class CloudinaryService
             return false;
         }
 
-        $publicId = $this->extractPublicId($url);
-        if (!$publicId) {
+        try {
+            $publicId = $this->extractPublicId($url);
+            if (!$publicId) {
+                return false;
+            }
+
+            $timestamp = time();
+            $params = ['public_id' => $publicId, 'timestamp' => $timestamp];
+            $signature = $this->signParams($params);
+
+            $response = Http::timeout(15)->post("https://api.cloudinary.com/v1_1/{$this->cloudName}/image/destroy", [
+                'public_id' => $publicId,
+                'api_key' => $this->apiKey,
+                'timestamp' => $timestamp,
+                'signature' => $signature,
+            ]);
+
+            return $response->successful() && $response->json('result') === 'ok';
+        } catch (\Exception $e) {
+            Log::error('Cloudinary destroy failed', ['error' => $e->getMessage()]);
             return false;
         }
-
-        $timestamp = time();
-        $params = ['public_id' => $publicId, 'timestamp' => $timestamp];
-        $signature = $this->signParams($params);
-
-        $response = Http::post("https://api.cloudinary.com/v1_1/{$this->cloudName}/image/destroy", [
-            'public_id' => $publicId,
-            'api_key' => $this->apiKey,
-            'timestamp' => $timestamp,
-            'signature' => $signature,
-        ]);
-
-        return $response->successful() && $response->json('result') === 'ok';
     }
 
     public function getFileUrl(string $path): string
